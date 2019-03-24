@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="common">
+
+	<!-- 오라클 전용 SQL -->
+
+	<!-- 페이징 처리 -->
+<!--       <select id="selectFileInfo" parameterType="hashmap" resultType="hashmap"> -->
+<!--       	<![CDATA[ -->
+<!-- 		  SELECT -->
+<!-- 		      STORED_FILE_NAME, -->
+<!-- 		      ORIGINAL_FILE_NAME -->
+<!-- 		  FROM -->
+<!-- 		      BRD_FILE -->
+<!-- 		  WHERE 1=1 -->
+<!-- 		      AND FILEIDX = #{fileidx} -->
+<!-- 		      AND BRD_IDX = #{brdidx} -->
+<!--    		]]> -->
+<!--     </select> -->
+    
+<!--     <sql id="pagingPre"> -->
+<!--     <![CDATA[ -->
+<!--         SELECT -->
+<!--             AAA.* -->
+<!--         FROM( -->
+<!--             SELECT -->
+<!--                 COUNT(*) OVER() AS TOTALCOUNT, -->
+<!--                 AA.* -->
+<!--             FROM(   -->
+<!--     ]]> -->
+<!-- 	</sql> -->
+
+<!-- 	<sql id="pagingPost"> -->
+<!-- 	    <![CDATA[ -->
+<!-- 	            ) AA -->
+<!-- 	        ) AAA -->
+<!-- 	        WHERE -->
+<!-- 	            AAA.RNUM BETWEEN #{start} AND #{end} -->
+<!-- 	    ]]> -->
+<!-- 	</sql> -->
+	
+	<!-- 페이징처리 -->
+	
+	
+	
+	<!-- SELECT 공통 코드 조회 -->
+<!--       <select id="selectCommonCode" parameterType="hashmap" resultType="hashmap"> -->
+<!--       	<![CDATA[ -->
+<!-- 			SELECT -->
+<!-- 		 		A.CODE, A.CODE_NAME, B.VAR_CODE, B.VAR_NAME, A.USE_YN -->
+<!-- 			FROM COMMON_CODE A, COMMON_CODE_DETAIL B -->
+<!-- 			WHERE 1=1  -->
+<!--         	AND A.CODE = B.CODE -->
+<!-- 				AND A.CODE = #{code}  -->
+<!-- 				AND A.USE_YN = 'Y' -->
+<!-- 			ORDER BY CODE_ORDER ASC -->
+<!--    		]]> -->
+<!--     </select>	 -->
+    
+     <!-- SELECT 공통 코드 조회 / REF_1 컬럼 참조 -->
+<!--       <select id="selectCommonRef1Code" parameterType="hashmap" resultType="hashmap"> -->
+<!--       	<![CDATA[ -->
+<!-- 			SELECT -->
+<!-- 		 		A.CODE, A.CODE_NAME, B.VAR_CODE, B.VAR_NAME, A.USE_YN -->
+<!-- 			FROM COMMON_CODE A, COMMON_CODE_DETAIL B -->
+<!-- 			WHERE 1=1  -->
+<!--         	AND A.CODE = B.CODE -->
+<!-- 				AND A.CODE = #{code}  -->
+<!-- 				AND B.REF_1 = #{ref_1} -->
+<!-- 				AND A.USE_YN = 'Y' -->
+<!-- 			ORDER BY CODE_ORDER ASC -->
+<!--    		]]> -->
+<!--     </select>	 -->
+    
+    <!-- UPDATE SEQ -->
+<!--       <update id="updateSeq" parameterType="hashmap"> -->
+<!--       	<![CDATA[ -->
+<!-- 			UPDATE -->
+<!-- 				TB_SEQ  -->
+<!-- 			SET  -->
+<!-- 				SEQ_NO = SEQ_NO + 1  -->
+<!-- 			WHERE  -->
+<!-- 				SEQ_CODE = #{seq_code} -->
+<!--    		]]> -->
+<!--     </update>	 -->
+    
+	<!-- SELECT SEQ-->
+<!--       <select id="selectSeq" parameterType="hashmap" resultType="java.lang.Integer"> -->
+<!--       	<![CDATA[ -->
+<!-- 			SELECT -->
+<!-- 		 		SEQ_NO -->
+<!-- 			FROM TB_SEQ -->
+<!-- 			WHERE 1=1  -->
+<!--         	AND SEQ_CODE = #{seq_code} -->
+<!--    		]]> -->
+<!--     </select>	 -->
+
+    <!-- 오라클 전용 SQL -->
+    
+    
+    
+    
+    <!-- MYSQL 전용 SQL -->
+
+	<!-- 페이징 처리 -->
+	
+      <select id="selectFileInfo" parameterType="hashmap" resultType="hashmap">
+      	<![CDATA[
+		  SELECT
+		      STORED_FILE_NAME,
+		      ORIGINAL_FILE_NAME
+		  FROM
+		      BRD_FILE
+		  WHERE 1=1
+		      AND FILEIDX = #{fileidx}
+		      AND BRD_IDX = #{brdidx}
+   		]]>
+    </select>
+    
+    <!-- 사용안함 -->
+    <sql id="pagingTotalCount">
+    <![CDATA[
+        SELECT
+            AAA.*
+        FROM(
+            SELECT
+                COUNT(*) AS TOTALCOUNT
+            FROM(  
+    ]]>
+	</sql>
+    
+    
+    
+    <sql id="pagingPre">
+    <![CDATA[
+        SELECT
+            AAA.*
+        FROM(
+            SELECT
+                AA.*
+            FROM(  
+    ]]>
+	</sql>
+
+	<sql id="pagingPost">
+	    <![CDATA[
+	            ) AA
+	        ) AAA
+	           LIMIT #{start}, #{end}
+	    ]]>
+	</sql>
+	
+	<!-- 페이징처리 -->
+	
+	
+	
+	<!-- SELECT 공통 코드 조회 -->
+      <select id="selectCommonCode" parameterType="hashmap" resultType="hashmap">
+      	<![CDATA[
+			SELECT
+		 		A.CODE, A.CODE_NAME, B.VAR_CODE, B.VAR_NAME, A.USE_YN
+			FROM COMMON_CODE A, COMMON_CODE_DETAIL B
+			WHERE 1=1 
+        	AND A.CODE = B.CODE
+				AND A.CODE = #{code} 
+				AND A.USE_YN = 'Y'
+			ORDER BY CODE_ORDER ASC
+   		]]>
+    </select>	
+    
+     <!-- SELECT 공통 코드 조회 / REF_1 컬럼 참조 -->
+      <select id="selectCommonRef1Code" parameterType="hashmap" resultType="hashmap">
+      	<![CDATA[
+			SELECT
+		 		A.CODE, A.CODE_NAME, B.VAR_CODE, B.VAR_NAME, A.USE_YN
+			FROM COMMON_CODE A, COMMON_CODE_DETAIL B
+			WHERE 1=1 
+        	AND A.CODE = B.CODE
+				AND A.CODE = #{code} 
+				AND B.REF_1 = #{ref_1}
+				AND A.USE_YN = 'Y'
+			ORDER BY CODE_ORDER ASC
+   		]]>
+    </select>	
+    
+    <!-- UPDATE SEQ -->
+      <update id="updateSeq" parameterType="hashmap">
+      	<![CDATA[
+			UPDATE
+				TB_SEQ 
+			SET 
+				SEQ_NO = SEQ_NO + 1 
+			WHERE 
+				SEQ_CODE = #{seq_code}
+   		]]>
+    </update>	
+    
+	<!-- SELECT SEQ-->
+      <select id="selectSeq" parameterType="hashmap" resultType="java.lang.Integer">
+      	<![CDATA[
+			SELECT
+		 		SEQ_NO
+			FROM TB_SEQ
+			WHERE 1=1 
+        	AND SEQ_CODE = #{seq_code}
+   		]]>
+    </select>	
+
+    <!-- MYSQL 전용 SQL -->
+    
+</mapper>

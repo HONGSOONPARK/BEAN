@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
+
+	 <welcome-file-list>
+        <welcome-file>index.jsp</welcome-file>
+     </welcome-file-list>
+
+	<!-- Creates the Spring Container shared by all Servlets and Filters -->
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+
+	<!-- Processes application requests -->
+	<servlet>
+		<servlet-name>action</servlet-name>
+		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+		<init-param>
+			<param-name>contextConfigLocation</param-name>
+			<param-value>/WEB-INF/config/servlet-context.xml</param-value>
+		</init-param>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	
+	<servlet-mapping>
+		<servlet-name>action</servlet-name>
+		<url-pattern>*.do</url-pattern>
+	</servlet-mapping>
+	
+		<!-- The definition of the Root Spring Container shared by all Servlets and Filters -->
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>classpath*:config/spring/context-*.xml</param-value>
+<!-- 		<param-value>/WEB-INF/spring/root-context.xml</param-value> -->
+	</context-param>
+	
+	
+	<filter>
+    	<filter-name>encodingFilter</filter-name>
+    	<filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+    	<init-param>
+     	<param-name>encoding</param-name>
+     	<param-value>UTF-8</param-value>
+    	</init-param>   
+   </filter>
+   
+   <filter-mapping>
+    	<filter-name>encodingFilter</filter-name>
+    	<url-pattern>*.do</url-pattern>
+   </filter-mapping>
+   
+   
+   
+<!-- xss 취약점, 파일업로드시 -->
+   	<filter>
+		<filter-name>multipartFilter</filter-name>
+		<filter-class>org.springframework.web.multipart.support.MultipartFilter</filter-class>
+<!-- 		<init-param> -->
+<!-- 			<param-name>multipartResolverBeanName</param-name> -->
+<!-- 			<param-value>multipartResolver</param-value> -->
+<!-- 		</init-param>  -->
+	</filter> 
+	<filter-mapping>
+		<filter-name>multipartFilter</filter-name>
+		<url-pattern>/brd/brdModifyUpdate.do</url-pattern>
+		<url-pattern>/brd/brdWriteInsert.do</url-pattern>
+	</filter-mapping>
+   
+   
+<!-- xss 취약점  -->
+ 	<filter>
+		<filter-name>tagFilter</filter-name>
+		<filter-class>bean.common.util.filter.HTMLTagFilter</filter-class>
+	</filter> 
+	<filter-mapping>
+		<filter-name>tagFilter</filter-name>
+		<url-pattern>*.do</url-pattern>
+	</filter-mapping>  
+	
+
+<!-- 크로스 도메인, cros -->
+<!-- 	<filter> -->
+<!-- 	    <filter-name>cors</filter-name> -->
+<!-- 	    <filter-class>bean.common.util.filter.CORSFilter</filter-class> -->
+<!-- 	</filter> -->
+<!-- 	<filter-mapping> -->
+<!-- 	    <filter-name>cors</filter-name> -->
+<!-- 	    <url-pattern>*</url-pattern> -->
+<!-- 	</filter-mapping> -->
+
+
+
+   
+<!--    <filter> -->
+<!--     <filter-name>HTMLTagFilter</filter-name> -->
+<!--     <filter-class> -->
+<!--             egovframework.rte.ptl.mvc.filter.HTMLTagFilter -->
+<!--         </filter-class> -->
+<!--   </filter> -->
+<!--   <filter-mapping> -->
+<!--     <filter-name>HTMLTagFilter</filter-name> -->
+<!--     <url-pattern>*.do</url-pattern> -->
+<!--   </filter-mapping> -->
+   
+   
+   
+<!--    	<filter> -->
+<!-- 		<filter-name>tagFilter</filter-name> -->
+<!-- 		<filter-class>bean.common.util.HTMLTagFilter</filter-class> -->
+<!-- 	</filter>  -->
+<!-- 	<filter-mapping> -->
+<!-- 		<filter-name>tagFilter</filter-name> -->
+<!-- 		<url-pattern>*.do</url-pattern> -->
+<!-- 	</filter-mapping> -->
+   
+   
+
+	
+
+	<!-- Spring Security --> 
+	<filter>
+	  <filter-name>springSecurityFilterChain</filter-name>
+	  <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+	</filter>
+	<filter-mapping>
+	  <filter-name>springSecurityFilterChain</filter-name>
+	  <url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+
+
+	<!-- error  -->
+	
+	<error-page>
+		<error-code>404</error-code>
+		<location>/common/404error.do</location>
+	</error-page>
+	
+	<error-page>
+		<exception-type>java.lang.Thowable</exception-type>
+		<location>/common/Thowableerror.do</location>
+		
+	</error-page>
+	
+	<error-page>
+		<exception-type>java.lang.Exception</exception-type>
+		<location>/common/Exceptionerror.do</location>
+	</error-page>
+		
+	
+	<error-page>
+		<error-code>500</error-code>
+		<location>/common/500error.do</location>
+	</error-page>
+	
+	<error-page>
+		<error-code>503</error-code>
+		<location>/common/503error.do</location>
+	</error-page>
+	
+
+
+
+
+
+
+<!-- <filter> -->
+<!--   <filter-name>CorsFilter</filter-name> -->
+<!--   <filter-class>org.apache.catalina.filters.CorsFilter</filter-class> -->
+<!--   <init-param> -->
+<!--     <param-name>cors.allowed.origins</param-name> -->
+<!--     <param-value>*</param-value> -->
+<!--   </init-param> -->
+<!--   <init-param> -->
+<!--     <param-name>cors.allowed.methods</param-name> -->
+<!--     <param-value>GET,POST,HEAD,OPTIONS,PUT,DELETE</param-value> -->
+<!--   </init-param> -->
+<!--   <init-param> -->
+<!--     <param-name>cors.allowed.headers</param-name> -->
+<!--     <param-value>Content-Type,X-Requested-With,accept,Origin,Access-Control-Request-Method,Access-Control-Request-Headers</param-value> -->
+<!--   </init-param> -->
+<!--   <init-param> -->
+<!--     <param-name>cors.exposed.headers</param-name> -->
+<!--     <param-value>Access-Control-Allow-Origin,Access-Control-Allow-Credentials</param-value> -->
+<!--   </init-param> -->
+<!--   <init-param> -->
+<!--     <param-name>cors.support.credentials</param-name> -->
+<!--     <param-value>true</param-value> -->
+<!--   </init-param> -->
+<!--   <init-param> -->
+<!--     <param-name>cors.preflight.maxage</param-name> -->
+<!--     <param-value>10</param-value> -->
+<!--   </init-param> -->
+<!-- </filter> -->
+<!-- <filter-mapping> -->
+<!--   <filter-name>CorsFilter</filter-name> -->
+<!--   <url-pattern>/*</url-pattern> -->
+<!-- </filter-mapping> -->
+
+
+
+
+</web-app>

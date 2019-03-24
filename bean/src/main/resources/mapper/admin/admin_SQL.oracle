@@ -1,0 +1,779 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="admin">
+
+<!-- 오라클 전용 SQL -->
+    <select id="adminMenu" parameterType="bean.menu.MenuVO" resultType="bean.menu.MenuVO">
+   			  	        	SELECT  
+            ROLE_CHAR,
+					  DEPTH_1,
+					  DEPTH_2,
+					  DEPTH_3,
+					  MENU_ID,
+					  MENU_NAME,
+					  MENU_URL,
+					  SORT,
+					  CONNECT_BY_ISLEAF AS LEAF,
+					  USE_YN,
+					  ADMIN_YN
+				FROM(
+        SELECT 
+					  DEPTH_1,
+					  DEPTH_2,
+					  DEPTH_3,
+					  MENU_ID,
+					  MENU_NAME,
+					  MENU_URL,
+					  SORT,
+					  USE_YN,
+					  ADMIN_YN
+				FROM ROLE_MENU
+				WHERE 1=1
+				  AND USE_YN = 'Y'
+				  AND ADMIN_YN ='Y'
+				)
+				  START WITH DEPTH_1 = 0
+				  CONNECT BY PRIOR  DEPTH_2 = DEPTH_1
+    </select>   
+    
+    
+    
+    
+    
+    <select id="adminMemberList" parameterType="bean.login.CustomUserDetail" resultType="bean.login.CustomUserDetail">
+			SELECT
+				A.MEMBER_NO AS MEMBER_NO,
+				A.MEMBER_ID AS MEMBER_ID,
+				'비밀입니다' AS MEMBER_PWD,
+				A.MEMBER_ROLE AS MEMBER_ROLE,
+				A.MEMBER_NICK AS MEMBER_NICK,
+				A.MEMBER_NAME AS MEMBER_NAME
+			FROM 
+				MEMBER_INFO A
+			WHERE 1=1
+		    	<if test="member_id != null">
+		    		AND MEMBER_ID = ${member_id}
+		    	</if>
+		    	<if test="member_role != null">
+		    		AND MEMBER_ROLE = ${member_role}
+		    	</if>
+		    	<if test="member_nick != null">
+		    		AND MEMBER_NICK = ${member_nick}
+		    	</if>
+		    	<if test="member_name != null">
+		    		AND MEMBER_NAME = ${member_name}
+		    	</if>
+		    	AND A.DEL_YN = 'N'
+			ORDER BY MEMBER_NO ASC
+    </select>      
+
+
+    <select id="adminMemberInfoDetails" parameterType="bean.member.MemberVO" resultType="bean.member.MemberVO">
+			 <![CDATA[
+				SELECT
+					A.MEMBER_NO,
+					A.MEMBER_ID,
+					A.MEMBER_PWD,
+					A.MEMBER_PWD AS MEMBER_PWD_CUR,
+					A.MEMBER_ROLE,
+					A.MEMBER_NICK,
+					A.MEMBER_NAME,
+					B.MEMBER_TEL,
+					B.MEMBER_PHONE,
+					B.MEMBER_EMAIL,
+					B.MEMBER_ADDR,
+					B.MEMBER_ADDR_2,
+					B.MEMBER_ENG_NAME,
+					A.MEMBER_TYPE,
+					TO_CHAR(B.CRE_DATE,'YYYY-MM-DD hh24:mi:ss') AS CRE_DATE,
+					B.MOD_DATE,
+					B.USE_YN
+				FROM MEMBER_INFO A,
+				     MEMBER_INFO_DETAIL B
+				WHERE 1=1
+				AND A.MEMBER_ID = B.MEMBER_ID
+				AND A.MEMBER_NO = #{member_no}
+				AND A.MEMBER_ID = #{member_id}
+		]]>
+    </select>    
+    
+    
+    <insert id="memberInsert" parameterType="bean.member.MemberVO">
+        
+        <![CDATA[
+		INSERT INTO	MEMBER_INFO
+		(
+			MEMBER_NO,
+			MEMBER_ID,
+			MEMBER_PWD,
+			MEMBER_ROLE,
+			MEMBER_NICK,
+			MEMBER_NAME,
+			MEMBER_TYPE,
+			DEL_YN
+		)VALUES(
+	      	#{member_no},
+	      	#{member_id},
+	      	#{member_pwd},
+	      	#{member_role},
+	      	#{member_nick},
+	      	#{member_name},
+	      	#{member_type},
+	      	'N'
+	     )
+        ]]>
+     </insert>
+
+
+    <insert id="memberDetailInsert" parameterType="bean.member.MemberVO">
+        <![CDATA[
+			INSERT INTO MEMBER_INFO_DETAIL
+			(
+				MEMBER_NO,
+				MEMBER_ID,
+				MEMBER_TEL,
+				MEMBER_PHONE,
+				MEMBER_EMAIL,
+				MEMBER_ADDR,
+				MEMBER_ADDR_2,
+				MEMBER_ENG_NAME,
+				USE_YN,
+				CRE_DATE,
+				MOD_DATE
+			)VALUES(
+				#{member_no},
+				#{member_id},
+				#{member_tel},
+				#{member_phone},
+				#{member_email},
+				#{member_addr},
+				#{member_addr_2},
+				#{member_eng_name},
+				#{use_yn},
+				SYSDATE,
+				SYSDATE
+			)
+        ]]>
+     </insert> 
+     
+     <update id="memberUpdate" parameterType="bean.member.MemberVO" >
+        <![CDATA[
+			UPDATE 
+				MEMBER_INFO
+			 SET
+				MEMBER_PWD = #{member_pwd},
+				MEMBER_ROLE = #{member_role},
+				MEMBER_NICK = #{member_nick},
+				MEMBER_TYPE = #{member_type}
+			WHERE MEMBER_NO = #{member_no}
+        ]]>
+     </update>      
+     
+     <update id="memberDetailUpdate" parameterType="bean.member.MemberVO" >
+        <![CDATA[
+			UPDATE 
+				MEMBER_INFO_DETAIL
+			 SET
+				MEMBER_TEL = #{member_tel},
+				MEMBER_PHONE = #{member_phone},
+				MEMBER_EMAIL = #{member_email},
+				MEMBER_ADDR = #{member_addr},
+				MEMBER_ADDR_2 = #{member_addr_2},
+				MEMBER_ENG_NAME = #{member_eng_name},
+				MOD_DATE = sysdate,
+				USE_YN = #{use_yn}
+			WHERE MEMBER_ID = #{member_id}
+        ]]>
+     </update>   
+
+
+
+	<update id="memberUse" parameterType="bean.member.MemberVO" >
+        <![CDATA[
+			UPDATE 
+				MEMBER_INFO
+			 SET
+				DEL_YN ='N'
+			WHERE MEMBER_NO = #{member_no}
+        ]]>
+     </update>  
+
+
+     <update id="memberDelete" parameterType="bean.member.MemberVO" >
+        <![CDATA[
+			UPDATE 
+				MEMBER_INFO
+			 SET
+				DEL_YN ='Y'
+			WHERE MEMBER_NO = #{member_no}
+        ]]>
+     </update>  
+     
+     <update id="memberRealDelete" parameterType="bean.member.MemberVO" >
+        <![CDATA[
+			DELETE 
+				MEMBER_INFO
+			WHERE MEMBER_NO = #{member_no}
+        ]]>
+     </update>
+     
+      <update id="memberDetailRealDelete" parameterType="bean.member.MemberVO" >
+        <![CDATA[
+			DELETE 
+				MEMBER_INFO_DETAIL
+			WHERE MEMBER_NO = #{member_no}
+        ]]>
+     </update>
+       
+
+     <update id="memberDetailDelete" parameterType="bean.member.MemberVO" >
+        <![CDATA[
+			UPDATE 
+				MEMBER_INFO_DETAIL
+			 SET
+				USE_YN ='N'
+			WHERE MEMBER_ID = #{member_id}
+        ]]>
+     </update>             
+
+
+    <select id="selMemberNo" parameterType="bean.member.MemberVO" resultType="bean.member.MemberVO">
+			 <![CDATA[
+				SELECT
+					A.MEMBER_ID,
+					A.MEMBER_NAME,
+					A.MEMBER_NO,
+					A.MEMBER_PWD,
+					A.MEMBER_ROLE,
+					A.MEMBER_TYPE,
+					B.USE_YN
+				FROM MEMBER_INFO A, MEMBER_INFO_DETAIL B
+				WHERE 1=1
+				AND A.MEMBER_ID = B.MEMBER_ID
+				AND A.MEMBER_ID = #{member_id}
+		]]>
+    </select>    
+
+
+
+	<select id="selectCodeCheck" parameterType="bean.admin.AdminVO" resultType="bean.admin.AdminVO">
+		SELECT 
+	    	COUNT(*) AS CODE_CHECK
+	    FROM COMMON_CODE A
+		WHERE 1 = 1
+			AND CODE = #{code}
+	</select>
+        
+        
+	<update id="codeListUpdate" parameterType="bean.admin.AdminVO" >
+			UPDATE 
+				COMMON_CODE
+			 SET
+				CODE = #{code},
+				CODE_NAME = #{code_name},
+				MOD_DATE = sysdate,
+				USE_YN = #{use_yn},
+				MOD_ID = #{mod_id}
+			WHERE 1=1 
+				AND NO = #{no}
+    </update> 
+    
+    
+	<update id="codeDetailUpdate" parameterType="bean.admin.AdminVO" >
+    	<![CDATA[
+			UPDATE 
+				COMMON_CODE_DETAIL
+			 SET
+                CODE = #{code},     
+                CODE_NAME = #{code_name},
+                VAR_CODE = #{var_code}, 
+                VAR_NAME = #{var_name},      
+                REF_1 = #{ref_1},    
+                REF_2 = #{ref_2},    
+                REF_3 = #{ref_3},    
+                REG_ID = #{reg_id},   
+                REG_DATE = SYSDATE,     
+                MOD_ID = #{mod_id},   
+                MOD_DATE= SYSDATE,     
+                CODE_ORDER= #{code_order}
+			WHERE 1=1 
+				AND DETAIL_NO = #{detail_no}
+        ]]>
+    </update>     
+    
+    
+	<update id="codeListInsert" parameterType="bean.admin.AdminVO" >
+    	<![CDATA[
+		  INSERT INTO COMMON_CODE
+		  (
+		  	NO,
+		    CODE,
+		    CODE_NAME,
+		    USE_YN,
+		    REG_ID,
+		    REG_DATE,
+		    MOD_ID,
+		    MOD_DATE
+		  )
+		  VALUES
+		  (
+			#{no},		  	
+		    #{code},
+		    #{code_name},
+		    'Y',
+		    #{reg_id},
+		    SYSDATE,
+		    #{mod_id},
+		    SYSDATE
+		  )
+        ]]>
+    </update>
+    
+    
+    <update id="codeDetailInsert" parameterType="bean.admin.AdminVO" >
+    	<![CDATA[
+		  INSERT INTO COMMON_CODE_DETAIL
+		  (
+		  	DETAIL_NO,
+		    CODE,
+			CODE_NAME,
+			VAR_CODE,
+			VAR_NAME,
+			REF_1,
+			REF_2,
+			REF_3,
+			REG_ID,
+			REG_DATE,
+			MOD_ID,
+			MOD_DATE,
+			CODE_ORDER
+		  )
+		  VALUES
+		  (
+		  	#{detail_no},
+		    #{code},
+		    #{code_name},
+		    #{var_code},
+		    #{var_name},
+		    #{ref_1},
+		    #{ref_2},
+		    #{ref_3},
+		    #{reg_id},
+		    SYSDATE,
+		    #{mod_id},
+		    SYSDATE,
+		    #{code_order}
+		  )
+        ]]>
+    </update>
+    
+    
+    <update id="codeListDelete" parameterType="java.lang.Integer" >
+    	<![CDATA[
+		 DELETE FROM COMMON_CODE
+		 WHERE 1=1 
+		 	AND CODE = #{code} 
+        ]]>
+    </update>
+    
+    
+    <update id="codeDetailDeleteAll" parameterType="java.lang.Integer" >
+    	<![CDATA[
+		 DELETE FROM COMMON_CODE_DETAIL 
+		 WHERE 1=1 
+		 	AND CODE = #{code}
+        ]]>
+    </update>   
+    
+    
+    <update id="codeDetailDelete" parameterType="java.lang.Integer" >
+    	<![CDATA[
+		 DELETE FROM COMMON_CODE_DETAIL 
+		 WHERE 1=1 
+		 	AND DETAIL_NO = #{detail_no}
+        ]]>
+    </update>                     
+
+
+
+    <select id="selectCodeList" parameterType="bean.admin.AdminVO" resultType="bean.admin.AdminVO">
+		<include refid="common.pagingPre"/> 
+			SELECT 
+				ROW_NUMBER() OVER (ORDER BY CODE DESC) RNUM,
+				NO,
+		    	CODE,
+		    	CODE_NAME
+		    FROM COMMON_CODE A
+			WHERE 1 = 1 
+			<if test="code != null and code != '' ">
+				AND CODE = #{code}
+			</if>
+			<if test="code_name != null and code_name != '' ">
+				AND CODE_NAME = #{code_name}
+			</if>
+			GROUP BY CODE,CODE_NAME,NO
+        	ORDER BY CODE DESC
+    	<include refid="common.pagingPost"/>
+	</select>
+
+
+    <select id="selectCodeInfo" parameterType="bean.admin.AdminVO" resultType="bean.admin.AdminVO">
+     		 SELECT 
+     		 	  A.NO,
+				  A.CODE,
+				  A.CODE_NAME,
+				  A.USE_YN
+		    FROM COMMON_CODE A
+			WHERE 1 = 1 
+     		 <if test="code != null and code != '' ">
+				AND A.CODE = #{code}
+			</if>
+			<if test="code_name != null and code_name != '' ">
+				AND A.CODE_NAME LIKE '%'||#{code_name}||'%'
+			</if>
+			ORDER BY A.CODE ASC
+	</select>
+
+
+    <select id="selectCodeDetail" parameterType="bean.admin.AdminVO" resultType="bean.admin.AdminVO">
+			SELECT 
+				  B.DETAIL_NO,
+				  B.CODE,
+				  B.CODE_NAME,
+				  B.VAR_CODE,
+				  B.VAR_NAME,
+          		  B.CODE_ORDER,
+				  B.REF_1,
+				  B.REF_2,
+				  B.REF_3
+    		FROM COMMON_CODE_DETAIL B
+			WHERE 1 = 1 
+     		 <if test="code != null and code != '' ">
+				AND B.CODE = #{code}
+			</if>
+			<if test="code_name != null and code_name != '' ">
+				AND B.CODE_NAME LIKE '%'||#{code_name}||'%'
+			</if>
+			ORDER BY B.CODE ASC, B.CODE_ORDER ASC
+	</select>
+
+      <select id="menuManagerList" parameterType="bean.menu.MenuVO" resultType="bean.menu.MenuVO">
+        <![CDATA[
+        	SELECT   
+        			  NO,
+					  DEPTH_1,
+					  DEPTH_2,
+					  DEPTH_3,
+					  MENU_ID,
+					  MENU_NAME,
+					  MENU_URL,
+					  SORT,
+					  CONNECT_BY_ISLEAF AS LEAF,
+					  USE_YN,
+					  ADMIN_YN
+				FROM(
+     		   SELECT 
+     		          NO,
+					  DEPTH_1,
+					  DEPTH_2,
+					  DEPTH_3,
+					  MENU_ID,
+					  MENU_NAME,
+					  MENU_URL,
+					  SORT,
+					  USE_YN,
+					  ADMIN_YN
+				FROM ROLE_MENU
+				WHERE 1=1
+				  AND USE_YN = 'Y'
+				  AND ADMIN_YN = 'N'
+				)
+				  START WITH DEPTH_1 = 0
+				  CONNECT BY PRIOR  DEPTH_2 = DEPTH_1
+				 ORDER BY SORT ASC
+        ]]>
+
+    </select>
+    
+    
+    
+    <select id="menuManagerDetail" parameterType="bean.menu.MenuVO" resultType="bean.menu.MenuVO">
+        <![CDATA[
+        	SELECT    
+        			  NO,
+					  DEPTH_1,
+					  DEPTH_2,
+					  DEPTH_3,
+					  MENU_ID,
+					  MENU_NAME,
+					  MENU_URL,
+					  SORT,
+					  CONNECT_BY_ISLEAF AS LEAF,
+					  USE_YN,
+					  ADMIN_YN
+				FROM(
+     		   SELECT 
+     		  		  NO,		
+					  DEPTH_1,
+					  DEPTH_2,
+					  DEPTH_3,
+					  MENU_ID,
+					  MENU_NAME,
+					  MENU_URL,
+					  SORT,
+					  USE_YN,
+					  ADMIN_YN
+				FROM ROLE_MENU
+				WHERE 1=1
+				  AND ADMIN_YN = 'N'
+				  AND DEPTH_1 = #{depth_1}
+				)
+				  START WITH DEPTH_1 = #{depth_1}
+				  CONNECT BY PRIOR  DEPTH_2 = DEPTH_1
+				   ORDER BY SORT ASC
+        ]]>
+    </select>
+
+    <select id="menuDepthCheck" parameterType="bean.menu.MenuVO" resultType="bean.menu.MenuVO">
+		 SELECT 
+			 (SELECT B.MENU_NAME
+			   FROM ROLE_MENU B
+			  WHERE B.DEPTH_2 = A.DEPTH_1) AS PMENU_NAME,
+			A.DEPTH_2,
+			A.MENU_ID,
+			A.MENU_NAME
+		  FROM ROLE_MENU A
+		 WHERE A.DEPTH_2 = #{depth_2}
+		 GROUP BY MENU_NAME, DEPTH_1, DEPTH_2, MENU_ID, MENU_NAME
+        	
+    </select>
+
+
+    <select id="menuDelCheck" parameterType="bean.menu.MenuVO" resultType="java.lang.Integer">
+		 SELECT 
+			COUNT(*) AS COUNT
+		  FROM ROLE_MENU A
+		 WHERE A.DEPTH_1 = #{depth_2}
+    </select>
+
+
+    <select id="menuCheck" parameterType="bean.menu.MenuVO" resultType="bean.menu.MenuVO">
+		 SELECT 
+			COUNT(*) AS COUNT
+		  FROM ROLE_MENU A
+		 WHERE A.DEPTH_2 = #{depth_2}
+    </select>
+
+	<insert id="menuInsert" parameterType="bean.menu.MenuVO" >
+    	<![CDATA[
+		INSERT INTO ROLE_MENU
+		(NO
+		,DEPTH_1
+		,DEPTH_2
+		,MENU_ID
+		,MENU_NAME
+		,MENU_URL
+		,SORT
+		,USE_YN
+		,ADMIN_YN
+		,REG_ID
+		,REG_DATE
+		,MOD_ID
+		,MOD_DATE)
+		VALUES
+		(
+		 #{no}
+		,#{depth_1}
+		,#{depth_2}
+		,#{menu_id}
+		,#{menu_name}
+		,#{menu_url}
+		,#{sort}
+		,#{use_yn}
+		,#{admin_yn}
+		,#{reg_id}
+		,sysdate
+		,#{mod_id}
+		,sysdate
+		)
+        ]]>
+    </insert>  
+
+
+    <update id="menuUpdate" parameterType="bean.menu.MenuVO" >
+    	<![CDATA[
+		UPDATE ROLE_MENU SET
+			DEPTH_1 = #{depth_1} 
+			,DEPTH_2 = #{depth_2} 
+			,MENU_ID = #{menu_id}
+			,MENU_NAME = #{menu_name}
+			,MENU_URL = #{menu_url}
+			,SORT = #{sort}
+			,USE_YN = #{use_yn}
+			,ADMIN_YN = #{admin_yn}
+			,MOD_ID = #{mod_id}
+			,MOD_DATE = sysdate
+		WHERE NO = #{no}
+        ]]>
+    </update>   
+    
+    
+    <update id="menuChildUpdate" parameterType="bean.menu.MenuVO" >
+    	<![CDATA[
+		UPDATE ROLE_MENU SET
+			DEPTH_1 = #{depth_2}
+			,MOD_ID = #{mod_id}
+			,MOD_DATE = sysdate
+		WHERE DEPTH_1 = #{compare_depth_2}
+        ]]>
+    </update>   
+    
+    <update id="menuAuthDetailUpdate" parameterType="bean.menu.MenuVO" >
+    	<![CDATA[
+			UPDATE ROLE_GROUP SET
+			        MENU_ID = #{menu_id},
+			        MENU_NAME = #{menu_name} 
+			WHERE MENU_NO = #{no}
+        ]]>
+    </update>      
+    
+    
+    
+    <update id="menuDelete" parameterType="bean.menu.MenuVO" >
+    	<![CDATA[
+		 DELETE FROM ROLE_MENU 
+		 WHERE 1=1 
+		 	AND no = #{no}
+        ]]>
+    </update>
+    
+    <select id="authManagerList" parameterType="bean.admin.AdminVO" resultType="bean.admin.AdminVO">
+		SELECT 
+			A.CODE AS CODE,
+	        B.DETAIL_NO AS DETAIL_NO,
+	        A.CODE_NAME AS CODE_NAME,
+	        B.VAR_CODE AS VAR_CODE,
+	       	B.VAR_NAME AS VAR_NAME
+  		FROM COMMON_CODE A, COMMON_CODE_DETAIL B
+ 			WHERE A.CODE = B.CODE AND A.CODE = 1 AND A.USE_YN = 'Y'
+    </select>    
+    
+	<select id="authDetail" parameterType="bean.admin.AdminVO" resultType="bean.admin.AdminVO">
+		SELECT
+		    A.NO,
+		    A.ROLE_CHAR,
+		    A.MENU_NO,
+		    A.MENU_ID,
+		    A.MENU_NAME,
+		    A.READ_GRANT,
+		    A.WRITE_GRANT,
+		    A.DELETE_GRANT
+		FROM 
+		    ROLE_GROUP A
+		WHERE 1=1
+		    AND A.ROLE_CHAR = #{role_char}
+    </select>  
+    
+    <select id="authDetailPop" parameterType="bean.menu.MenuVO" resultType="bean.menu.MenuVO">
+    
+    <include refid="common.pagingPre"/>
+                	
+        <![CDATA[
+		    SELECT  
+		    	ROW_NUMBER() OVER (ORDER BY DEPTH_2 ASC) RNUM,
+		    	NO,
+                DEPTH_1,
+                DEPTH_2,
+                MENU_ID,
+                MENU_NAME,
+                USE_YN,
+                ADMIN_YN
+            FROM(
+                    SELECT 
+                    	NO,
+                        DEPTH_1,
+                        DEPTH_2,
+                        MENU_ID,
+                        MENU_NAME,
+                        USE_YN,
+                        ADMIN_YN
+                    FROM ROLE_MENU
+                    WHERE 1=1
+                        AND USE_YN = 'Y'
+                        AND ADMIN_YN = 'N'
+                        AND NO <> 0
+                )
+                START WITH DEPTH_1 = 0
+                CONNECT BY PRIOR  DEPTH_2 = DEPTH_1
+            ]]>
+    	<include refid="common.pagingPost"/>
+    </select>  
+
+
+
+	<insert id="authDetailInsert" parameterType="bean.menu.MenuVO" >
+    	<![CDATA[
+		INSERT INTO ROLE_GROUP
+        (
+	        NO,
+	        ROLE_CHAR,
+	        MENU_NO,
+	        MENU_ID,
+	        MENU_NAME,
+	        READ_GRANT, 
+	        WRITE_GRANT, 
+	        DELETE_GRANT,
+	        REG_ID,
+	        REG_DATE
+        )
+        VALUES
+        (
+	         #{no}
+	        ,#{role_char}
+	        ,#{menu_no}
+	        ,#{menu_id}
+	        ,#{menu_name}
+	        ,#{read_grant}
+	        ,#{write_grant}
+	        ,#{delete_grant}
+	        ,#{reg_id}
+	        ,sysdate
+        )
+        ]]>
+    </insert>  
+
+
+    <update id="authDetailUpdate" parameterType="bean.menu.MenuVO" >
+    	<![CDATA[
+			UPDATE ROLE_GROUP SET
+			        READ_GRANT = #{read_grant},
+			        WRITE_GRANT = #{write_grant}, 
+			        DELETE_GRANT = #{delete_grant}
+			WHERE NO = #{no}
+        ]]>
+    </update>
+    
+    
+
+    
+    
+    <update id="authDetailDelete" parameterType="bean.menu.MenuVO" >
+    	<![CDATA[
+		 DELETE FROM ROLE_GROUP 
+		 WHERE 1=1 
+		 	AND no = #{no}
+        ]]>
+    </update>
+
+<!-- 오라클 전용 SQL -->
+
+
+    
+
+
+    
+</mapper>
+
+
+

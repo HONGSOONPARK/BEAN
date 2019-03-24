@@ -1,0 +1,125 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%-- <%@ include file="/WEB-INF/views/login/memberInfoModal.jsp" %> --%>
+
+
+<header>
+<div class="nav_wrapper"> 
+	<div class="spinner-master">
+		<input type="checkbox" id="spinner-form" />
+		<label for="spinner-form" class="spinner-spin">
+		<div class="spinner diagonal part-1"></div>
+		<div class="spinner horizontal"></div>
+		<div class="spinner diagonal part-2"></div>
+		</label>
+	</div>
+<!-- <a href="#search_box" class="menu_btn" id="search">&#9740;</a> -->
+	
+	<div class="w_info">
+		<span>
+			<img src="<c:url value='/resources/image/lion.gif'/>" alt="프로필사진" class="header_profile" />
+			${user.getMember_name() }님 환영합니다.
+		</span>
+		<button type="button" class="headerBtn" id="info_Btn">내정보</button>
+		<button type="button" class="headerBtn" id="logout_Btn">Logout</button>
+	</div>
+	
+	<nav id="menu" class="menu">
+		<ul class="dropdown">
+		<c:choose>
+			<c:when test="${fn:length(menuvo) > 0 }">
+				<c:forEach var="row" items="${menuvo }" varStatus="var">
+					<c:choose>
+<%-- 						<c:when test="${row.getLeaf() == 0 && row.getDepth_1() == 0}" > --%>
+						<c:when test="${row.getDepth_1() == 0}" >
+							<li>
+								<a href="#">${row.getMenu_name()}</a>
+								<c:forEach var="rowin" items="${menuvo }" varStatus="status">
+									
+									<c:if test ="${status.first}">
+										<ul>
+									</c:if>	
+									<c:if test ="${row.getDepth_2() eq rowin.getDepth_1() }">
+										<li>
+											<!-- Depth 2 이상 링크 -->
+<%-- 											<a href="javascript:urlSubmit('<c:url value='${rowin.getMenu_url()}'/>','${rowin.getMenu_id()}')">${rowin.getMenu_name()}</a> --%>
+<%-- 											<a href="<c:url value='${rowin.getMenu_url()}'/>">${rowin.getMenu_name()}</a> --%>
+											<a href="<c:url value='${rowin.getMenu_url()}'/>?menu_id=${rowin.getMenu_id()}" >${rowin.getMenu_name()}</a>
+										</li>
+									</c:if>
+									<c:if test ="${status.last}">
+										</ul>
+									</c:if>
+								</c:forEach>
+							</li>
+						</c:when>
+                      	<c:when test="${row.getLeaf() == 1 && row.getDepth_1() == 0}" >
+                      		<li>
+                      			<!-- Depth 1  링크 -->
+<%--                       			<a href="javascript:urlSubmit('<c:url value='${row.getMenu_url()}'/>','${row.getMenu_id()}')">${row.getMenu_name()}</a> --%>
+<%--                       			<a href="<c:url value='${row.getMenu_url()}'/>"> ${row.getMenu_name()}</a> --%>
+                      			<a href="<c:url value='${row.getMenu_url()}'/>?menu_id="${row.getMenu_id()} >${row.getMenu_name()}</a>
+                      		</li>
+                      	</c:when>
+					</c:choose>
+				</c:forEach>
+			</c:when>  
+			<c:otherwise>
+		 	<li>
+		 		<a href="#" >사용할 수 있는 메뉴가 없습니다. <b style="font-size: 9px; color: red;">관리자에게 문의하세요</b></a>
+		 	</li>
+			</c:otherwise>  
+		 </c:choose>
+		 </ul>
+	</nav>
+<!-- <form class="search_box" id="search_box" action="/search/"> -->
+<!--     <input name="search_criteria" placeholder="Search here" value="" type="text"> -->
+<!--     <input class="search_icon" value="Search" type="submit"> -->
+<!-- </form> -->
+</div>
+<form id="logoutForm" name="logoutForm"></form>
+<script type="text/javascript">
+
+Kakao.init("${kakaoJsApi}");
+
+	$(document).ready(function () {
+		
+		$("#logout_Btn").on("click", function() {
+			var fmSubmit = new FmSubmit("logoutForm");
+			fmSubmit.setUrl("<c:out value ='${contextPath}/j_spring_security_logout' />");
+			
+			// user_type = K (카카오톡) 일 경우 카카오톡 로그아웃 처리 후 spring security 로그아웃 처리
+			if("${user.getMember_type()}" == "카카오"){
+				Kakao.Auth.getAccessToken();
+				Kakao.Auth.logout(function(){
+					Kakao.API.cleanup();
+		 			fmSubmit.submit();
+				});	
+			}else{
+	 			fmSubmit.submit();
+			}
+		});	
+		
+		$("#info_Btn").on("click", function(){
+			var popUrl ="<c:url value='/main/userInfoPop.do'/>?type=${user.getMember_type()}";
+			var popOption = "width=420px, height=295px, resizable=no, location=no, top=300px, left=300px;"
+			window.open(popUrl,"정보확인 ",popOption);
+		});
+		
+	});
+	
+	function urlSubmit(url,menu_id){
+		var fmSubmit = new FmSubmit();
+		fmSubmit.setUrl(url);
+		fmSubmit.addParam("cur_menu_id",menu_id);
+		fmSubmit.submit();
+	}
+	
+	
+	function logout(){
+		$("#logout_Btn").trigger("click");
+	}
+	
+</script>
+<script src="<c:url value='/resources/js/common/menu.js'/>" charset="utf-8"></script>
+<%-- <%@ include file="/WEB-INF/include/include-body.jspf" %> --%>
+</header>

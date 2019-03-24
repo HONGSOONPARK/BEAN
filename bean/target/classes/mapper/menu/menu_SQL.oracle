@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="menu">
+
+<!-- 오라클 쿼리 -->
+       <select id="roleMenu" parameterType="bean.menu.MenuVO" resultType="bean.menu.MenuVO">
+			SELECT A.DEPTH_1,
+			       A.DEPTH_2,
+			       A.DEPTH_3,
+			       A.MENU_ID,
+			       A.MENU_NAME,
+			       A.MENU_URL,
+			       A.SORT,
+			       A.USE_YN,
+			       A.ADMIN_YN,
+				   D.READ_GRANT,
+				   D.WRITE_GRANT,
+				   D.DELETE_GRANT,
+				   CONNECT_BY_ISLEAF AS LEAF
+			  FROM ROLE_MENU A, (	SELECT 
+			  								C.MENU_NO,
+			  								C.MENU_ID,
+			  								C.MENU_NAME,
+			  								C.READ_GRANT,
+									      	C.WRITE_GRANT,
+									      	C.DELETE_GRANT
+			  						FROM ROLE_GROUP C
+									WHERE 1 = 1 
+										AND ROLE_CHAR = (SELECT MEMBER_ROLE
+			  												FROM MEMBER_INFO B
+			 											WHERE 1 = 1 
+			 												AND B.MEMBER_ID = #{login_id} 
+			 												AND B.DEL_YN = 'N')
+			 					) D
+			 WHERE 1 = 1 
+			    AND A.USE_YN = 'Y' 
+			    AND A.ADMIN_YN = #{admin_yn}
+			    AND A.MENU_ID = D.MENU_ID
+			 START WITH A.DEPTH_1 = 0
+             CONNECT BY PRIOR  A.DEPTH_2 = A.DEPTH_1
+             ORDER BY SORT ASC
+    </select>
+    
+       
+    
+    
+       <select id="roleMenuAdmin" parameterType="bean.menu.MenuVO" resultType="bean.menu.MenuVO">
+			SELECT  
+				DEPTH_1,
+				DEPTH_2,
+				DEPTH_3,
+				MENU_ID,
+				MENU_NAME,
+				MENU_URL,
+				SORT,
+				CONNECT_BY_ISLEAF AS LEAF,
+				USE_YN,
+				ADMIN_YN
+			FROM(
+					SELECT 
+						DEPTH_1,
+						DEPTH_2,
+						DEPTH_3,
+						MENU_ID,
+						MENU_NAME,
+						MENU_URL,
+						SORT,
+						USE_YN,
+						ADMIN_YN
+					FROM ROLE_MENU
+					WHERE 1=1
+						AND USE_YN = 'Y'
+						AND ADMIN_YN = #{admin_yn}
+				)
+				START WITH DEPTH_1 = 0
+				CONNECT BY PRIOR  DEPTH_2 = DEPTH_1
+				ORDER BY SORT ASC
+    </select>
+ 
+<!-- 오라클 쿼리 -->
+
+
+
+
+</mapper>
+
+
