@@ -405,6 +405,17 @@
 		 </dependency>	  
 		<!-- spring security -->
 		
+		
+		<!-- jasypt -->	    
+		<dependency>  
+		    <groupId>org.jasypt</groupId>  
+		    <artifactId>jasypt-spring31</artifactId>  
+		    <version>1.9.2</version>  
+		    <scope>compile</scope>
+		</dependency>  
+
+
+		
 	</dependencies>
     <build>
         <plugins>
@@ -450,6 +461,7 @@
 				<version>2.5</version>
 			</plugin>
             
+
             
         </plugins>
     </build>

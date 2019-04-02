@@ -5,7 +5,6 @@
 	$(document).ready(function(){
 	    var childWindow = window.parent;
 	    var parentWindow = childWindow.opener;
-	    
 	    var member = new Object();
 	    
 	    member["id"] = "${membervo.getMember_id()}";

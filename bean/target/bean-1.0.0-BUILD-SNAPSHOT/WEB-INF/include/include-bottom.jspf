@@ -1,0 +1,9 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+ 
+ <footer class="footerSet">
+       <div align="center">
+				<p> 개발 : 박홍순 | 개발기간 : 2018.11 ~ 2019.02 (3개월) </p>
+				<p> SpringFramework /SpringSecurity / Mybatis / Oracle / Mysql / jQuery / Javascript / Java / Jsp / RestAPI   </p>
+				<p>https://github.com/HONGSOONPARK/BEAN</p>
+       </div>
+ </footer>

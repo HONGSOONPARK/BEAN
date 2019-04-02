@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="brd">
+
+<!-- 	MYSQL 전용 쿼리 -->
+      <select id="selectBrdListTotalCount" parameterType="hashmap" resultType="java.lang.Integer">
+<!--       	<include refid="common.pagingTotalCount"/>  -->
+        <![CDATA[
+             SELECT T2.* FROM(
+			    SELECT IFNULL(MAX(@RNUM:=@RNUM+1),0) AS TOTALCOUNT
+			    FROM (
+			          SELECT
+			            *
+			             FROM
+			                BRD_DATA A
+			             WHERE	1=1
+			                AND A.DEL_YN = 'N'
+			                AND A.BRD_ID = #{brdid}
+			            ORDER BY A.IDX DESC
+			    ) AS T1, (SELECT @RNUM:=0) AS R 
+			)  AS T2
+        ]]>
+<!--         <include refid="common.pagingPost"/> -->
+    </select>
+
+
+
+      <select id="selectBrdList" parameterType="hashmap" resultType="bean.brd.BrdVO">
+<!--       	<include refid="common.pagingPre"/>  -->
+        <![CDATA[
+        SELECT
+            AAA.*
+        FROM(
+            SELECT
+                AA.*
+            FROM(          
+             SELECT
+            	A.IDX,
+            	A.BRD_IDX AS BRDIDX,  
+            	(SELECT VAR_CODE FROM COMMON_CODE_DETAIL WHERE CODE = 3 AND VAR_NAME = A.SUBJECT ) AS SUBJECT,
+            	A.TITLE AS TITLE, 
+            	A.HIT_CNT AS HITCNT, 
+            	DATE_FORMAT(A.REG_DATE,'%Y/%m/%d %H:%i:%s') AS REGDATE,
+            	(SELECT MEMBER_NAME FROM MEMBER_INFO WHERE MEMBER_ID = A.REG_ID) AS REGNAME,
+            	A.REG_ID AS REGID,
+            	(SELECT COUNT(*) FROM BRD_FILE B WHERE B.BRD_IDX = A.IDX AND B.DEL_YN='N') AS FILECOUNT,
+            	A.BRD_ID
+             FROM
+                BRD_DATA A
+             WHERE	1=1
+                AND A.DEL_YN = 'N'
+                AND A.BRD_ID = #{brdid}
+            ORDER BY A.IDX DESC
+            	            ) AA
+	        ) AAA
+	          ORDER BY AAA.BRDIDX DESC LIMIT #{start}, #{end}
+        ]]>
+<!--         <include refid="common.pagingPost"/> -->
+    </select>
+
+
+
+     <insert id="insertBrd" parameterType="bean.brd.BrdVO">
+	    <![CDATA[
+	        INSERT INTO BRD_DATA
+	        (
+	            IDX,
+	            BRD_IDX,
+	            SUBJECT,
+	            TITLE, 
+	            CONTENTS, 
+	            HIT_CNT, 
+	            DEL_YN, 
+	            REG_DATE, 
+	            MOD_DATE,
+	            REG_ID,
+	            MOD_ID,
+	            BRD_ID
+	        )
+	        VALUES
+	        (
+	            #{idx},
+	            #{brdidx},  
+	            #{subject},
+	            #{title}, 
+	            #{contents}, 
+	            0, 
+	            'N', 
+	            NOW(),
+	            NOW(), 
+	            #{regid},
+	            #{modid},
+	            #{brdid}
+	        )
+	    ]]>
+	</insert>
+
+	<select id="selectBrdDetail" parameterType="bean.brd.BrdVO" resultType="bean.brd.BrdVO" >
+        <![CDATA[
+            SELECT
+            	A.IDX AS IDX,
+            	A.BRD_IDX AS BRDIDX,
+            	(SELECT VAR_CODE FROM COMMON_CODE_DETAIL WHERE CODE = 3 AND VAR_NAME = A.SUBJECT ) AS SUBJECT,
+            	A.TITLE AS TITLE,
+            	A.HIT_CNT AS HITCNT,
+            	DATE_FORMAT(A.REG_DATE,'%Y/%m/%d %H:%i:%s') AS REGDATE,
+            	A.REG_ID AS REGID,
+              (SELECT MEMBER_NAME FROM MEMBER_INFO WHERE MEMBER_ID = A.REG_ID) AS REGNAME,
+                A.CONTENTS AS CONTENTS,
+                A.BRD_ID AS BRDID
+             FROM
+                BRD_DATA A
+             WHERE	1=1
+                AND A.IDX = #{idx}
+            ORDER BY A.IDX DESC
+        ]]>
+    </select>
+
+	<update id="updateHitCnt" parameterType="bean.brd.BrdVO">
+		<![CDATA[
+			UPDATE BRD_DATA 
+			SET
+				HIT_CNT = IFNULL(HIT_CNT, 0) + 1
+			WHERE
+				IDX = #{idx}	
+		]]>
+	</update>
+	
+	
+	
+	<update id="updateBrd" parameterType="bean.brd.BrdVO">
+
+    <![CDATA[
+        UPDATE BRD_DATA 
+        SET
+            TITLE = #{title},
+            CONTENTS = #{contents},
+            SUBJECT = #{subject},
+            MOD_DATE = NOW(),
+            MOD_ID =#{modid}
+        WHERE
+            IDX = #{idx}    
+    ]]>
+
+	</update>
+
+
+
+	<update id="delBrd" parameterType="bean.brd.BrdVO">
+
+    <![CDATA[
+        UPDATE BRD_DATA
+        SET
+            DEL_YN = 'Y',
+            MOD_ID =#{modid}
+        WHERE
+            IDX = #{idx}
+    ]]>
+	</update>
+
+	
+	<insert id="insertFile" parameterType="bean.brd.BrdFileVO">
+
+    <![CDATA[
+
+        INSERT INTO BRD_FILE
+
+        (
+            FILEIDX,
+            BRD_ID,
+            BRD_IDX,
+            ORIGINAL_FILE_NAME,
+            STORED_FILE_NAME,
+            FILE_SIZE,
+            REG_ID,
+            FILE_EXT
+        )
+        VALUES
+        (
+            #{fileidx},
+            #{brdid},
+            #{brdidx},
+            #{originalfilename},
+            #{storedfilename},
+            #{filesize},
+            #{regid},
+            #{fileext}
+        )
+    ]]>
+
+	</insert>
+
+	
+	
+	<select id="selectFileList" parameterType="bean.brd.BrdFileVO" resultType="bean.brd.BrdFileVO">
+
+    <![CDATA[
+
+        SELECT
+            FILEIDX AS FILEIDX,
+            BRD_IDX AS BRDIDX,
+            ORIGINAL_FILE_NAME AS ORIGINALFILENAME,
+            STORED_FILE_NAME AS STOREDFILENAME,
+            ROUND(FILE_SIZE/1024,1) AS FILESIZE,
+            FILE_EXT AS FILEEXT
+        FROM
+            BRD_FILE
+        WHERE
+            BRD_IDX = #{brdidx}
+            AND DEL_YN = 'N'
+        ORDER BY FILEIDX ASC
+    ]]>
+
+	</select>
+	
+	
+	<update id="deleteFileList" parameterType="bean.brd.BrdFileVO">
+
+    <![CDATA[
+        UPDATE BRD_FILE SET
+            DEL_YN = 'Y'
+        WHERE 1=1 
+        AND BRD_IDX = #{brdidx}  
+    ]]>
+
+	</update>
+	 
+	
+	<update id="updateFile" parameterType="bean.brd.BrdFileVO">
+	
+	    <![CDATA[
+	        UPDATE BRD_FILE SET
+	            DEL_YN = 'N'
+	        WHERE 1=1
+	            AND FILEIDX = #{fileidx} 
+        		AND BRD_IDX = #{brdidx}  
+	    ]]>
+	
+	</update>
+
+	<select id="selectFileMaxIdx" parameterType="bean.brd.BrdFileVO" resultType="bean.brd.BrdFileVO">
+	    <![CDATA[
+	    	SELECT 
+	    		IFNULL(MAX(FILEIDX),0) AS MAXIDX
+	    	FROM BRD_FILE 
+	    ]]>
+	
+	</select>
+	
+<!-- 	MYSQL 전용 쿼리 -->
+
+
+
+
+
+
+
+</mapper>
+
+

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="login">
+
+      <select id="check_MemberId" parameterType="String" resultType="bean.login.CustomUserDetail">
+        <![CDATA[
+			SELECT             
+                A.MEMBER_NO as member_no,
+                A.MEMBER_ID as member_id,
+                A.MEMBER_PWD as member_pwd,
+                A.MEMBER_ROLE as member_role,
+                (SELECT B.VAR_CODE FROM COMMON_CODE_DETAIL B WHERE B.CODE = 1 AND B.VAR_NAME = A.MEMBER_ROLE) AS MEMBER_ROLE_NAME,
+                A.MEMBER_NICK as member_nick,
+                A.MEMBER_NAME as member_name,
+                A.MEMBER_TYPE as member_type
+            FROM
+                MEMBER_INFO A 
+            WHERE 1=1  
+                AND A.MEMBER_ID = #{member_id}
+                AND A.DEL_YN = 'N'
+        ]]>
+
+    </select>
+    
+    
+     <select id="check_MemberIdCnt" parameterType="String" resultType="java.lang.Integer">
+        <![CDATA[
+            SELECT             
+            	COUNT(*) AS MEMBER_ID
+			FROM
+            	MEMBER_INFO A 
+            WHERE 1=1  
+            	AND A.MEMBER_ID = #{member_id}
+        ]]>
+
+    </select>
+      
+    
+       <select id="roleMenu" parameterType="bean.menu.MenuVO" resultType="bean.menu.MenuVO">
+<!--         <![CDATA[ -->
+        	SELECT  
+            ROLE_CHAR,
+					  DEPTH_1,
+					  DEPTH_2,
+					  DEPTH_3,
+					  MENU_ID,
+					  MENU_NAME,
+					  MENU_URL,
+					  SORT,
+					  CONNECT_BY_ISLEAF AS LEAF,
+					  USE_YN,
+					  ADMIN_YN
+				FROM(
+        SELECT 
+					 ROLE_CHAR,
+					  DEPTH_1,
+					  DEPTH_2,
+					  DEPTH_3,
+					  MENU_ID,
+					  MENU_NAME,
+					  MENU_URL,
+					  SORT,
+					  USE_YN,
+					  ADMIN_YN
+				FROM ROLE_MENU
+				WHERE 1=1
+<!-- 				 AND ROLE_CHAR = #{role_char} -->
+				  AND USE_YN = 'Y'
+				  AND ADMIN_YN = 'N'
+				)
+				  START WITH DEPTH_1 = 0
+				  CONNECT BY PRIOR  DEPTH_2 = DEPTH_1
+<!--         ]]> -->
+
+    </select>
+ 
+
+
+
+</mapper>
+
+
